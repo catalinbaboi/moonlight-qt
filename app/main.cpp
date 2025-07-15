@@ -803,6 +803,23 @@ int main(int argc, char *argv[])
             return -1;
     }
 
+
+#ifdef STEAM_LINK
+    // Fix for Bluetooth controllers not being recognized after Moonlight starts
+    QTimer::singleShot(3000, []() {
+        SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
+        SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);
+        SDL_GameControllerEventState(SDL_ENABLE);
+
+        int numJoysticks = SDL_NumJoysticks();
+        qDebug() << "[Steam Link] Rescanned controllers:" << numJoysticks;
+        for (int i = 0; i < numJoysticks; ++i) {
+            const char* name = SDL_GameControllerNameForIndex(i);
+            qDebug() << "Controller" << i << ":" << (name ? name : "Unknown");
+        }
+    });
+#endif
+
     int err = app.exec();
 
     // Give worker tasks time to properly exit. Fixes PendingQuitTask
